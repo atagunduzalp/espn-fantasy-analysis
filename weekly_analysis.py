@@ -4,29 +4,13 @@ import pandas as pd
 pd.set_option('display.max_columns', None)
 pd.set_option('display.max_rows', None)
 import datetime
-import pytz
 import streamlit as st
 from datetime import date
 
-# TO_DO
-# streamlit formatında tarih, takım ismi, rakip takım ve lig id bilgisi al
-
-# 8li fantasy --> 640492668
-# bizimki --> 170805702
-
-# date = datetime.datetime.today()
-
-
-# date = datetime.datetime(2024, 10, 28)
-# league = League(league_id=170805702, year=2025, debug=False)
-# player = Player(data = {'name':'Jayson Tatum'}, year=2025)
 
 nine_cat_stats = ['PTS', 'BLK', 'STL', 'AST', 'REB', 'TO', '3PM', 'FGM', 'FGA', 'FTM', 'FTA']
-# MY_TEAM = 'Los Black Mamba'
-# OPPONENT_TEAM = 'Balabumbar'
 
-def is_within_week(date_dict, param_date, player):
-    # eastern = pytz.timezone('America/New_York')
+def is_within_week(date_dict, param_date):
 
     if isinstance(param_date, datetime.date) and not isinstance(param_date, datetime.datetime):
         param_date = datetime.datetime.combine(param_date, datetime.datetime.min.time())
@@ -37,7 +21,6 @@ def is_within_week(date_dict, param_date, player):
     start_of_week = param_date - datetime.timedelta(days=day_of_week)
 
     # Haftanın bitiş tarihi (Pazar)
-    # end_of_week = start_of_week + datetime.timedelta(days=7)
     end_of_week = start_of_week + datetime.timedelta(days=7, hours=7, minutes=59, seconds=59)
 
     today = datetime.datetime.combine(datetime.date.today(), datetime.datetime.min.time())
@@ -47,8 +30,6 @@ def is_within_week(date_dict, param_date, player):
         match_date = date_dict[date_elem]['date']
         if isinstance(match_date, datetime.date) and not isinstance(match_date, datetime.datetime):
             match_date = datetime.datetime.combine(match_date, datetime.datetime.min.time())
-        # `match_date`'i Doğu saatine göre ayarla
-        # match_date = eastern.localize(match_date)
 
         if today <= match_date <= end_of_week:
             count += 1
@@ -94,22 +75,15 @@ def get_teams_stats(league_id, team_name, date, league):
     print(all_players_stats_dict)
     all_players_stats_dict['current'] = current_stats
     df = pd.DataFrame(all_players_stats_dict)
-    # df['remaining'] = df.drop(columns=['current']).sum(axis=1)
     df['total'] = df.sum(axis=1)
-    # df['total']['%FG'] =df['total']['FGM'] / df['total']['FGA']
     df.loc['%FG', "total"] = df['total']['FGM'] / df['total']['FGA']
-    # df['total']['%FT'] = df['total']['FTM'] / df['total']['FTA']
     df.loc['%FT', "total"] = df['total']['FTM'] / df['total']['FTA']
 
     st.write(df)
-    print(df[['current', 'total']])
-    # print(df)
 
 
 def percentage_calculation(stats):
     try:
-        # Floor Division : Gives only Fractional Part as Answer
-
         if stats is not None and 'FGA' in stats.keys():
             stats['%FG'] = stats['FGM'] / stats['FGA']
         if stats is not None and 'FTA' in stats.keys():
