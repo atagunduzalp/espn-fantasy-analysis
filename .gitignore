@@ -1,0 +1,13 @@
+# Python Sanal Ortam
+.venv/
+
+# JetBrains IDEA Klasörü
+.idea/
+
+# Diğer Genel Dosyalar
+*.log
+__pycache__/
+*.pyc
+
+fantasy-8li.py
+streamlit_main.py
