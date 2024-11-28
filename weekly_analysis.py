@@ -54,7 +54,7 @@ def get_teams_stats(league_id, team_name, date, league):
                 if player.injuryStatus != 'OUT':
                     player_stats_dict = {}
 
-                    match_count = is_within_week(player.schedule, date, player)
+                    match_count = is_within_week(player.schedule, date)
                     if player.stats is not None:
                         last_15_days_avg = {}
                         for key in nine_cat_stats:
