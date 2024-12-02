@@ -146,4 +146,4 @@ if st.button("Reset"):
 
 if __name__ == '__main__':
     get_league_id()
-    get_team_names(st.session_state.league_id)
+#     get_team_names(st.session_state.league_id)
