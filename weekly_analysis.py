@@ -40,7 +40,7 @@ def get_league_info(league_id):
     return League(league_id=league_id, year=2025, debug=False)
 
 
-def get_teams_stats(league_id, team_name, date, league):
+def get_teams_stats(team_name, date, league):
     # league = get_league_info(league_id)
     all_players_stats_dict = {}
 
@@ -115,14 +115,14 @@ def current_state(team_name, league):
             return current_away_stats
 
 
-if __name__ == '__main__':
-    date = datetime.datetime(2024, 11, 25)
-    #24662177
-    league_id = '170805702'
-    # league = League(league_id= league_id, year=2025, debug=False)
-    league = get_league_info(league_id)
-    MY_TEAM = 'Los Black Mamba'
-    OPPONENT_TEAM = "Burak's 6'Under"
-    # MY_TEAM = 'Vinsanity Carter '
-    team_stats = get_teams_stats(league_id, MY_TEAM, date, league)
-    away_team_stats = get_teams_stats(league_id, OPPONENT_TEAM, date, league)
+# if __name__ == '__main__':
+#     date = datetime.datetime(2024, 11, 25)
+#     #24662177
+#     league_id = '170805702'
+#     # league = League(league_id= league_id, year=2025, debug=False)
+#     league = get_league_info(league_id)
+#     MY_TEAM = 'Los Black Mamba'
+#     OPPONENT_TEAM = "Burak's 6'Under"
+#     # MY_TEAM = 'Vinsanity Carter '
+#     team_stats = get_teams_stats(league_id, MY_TEAM, date, league)
+#     away_team_stats = get_teams_stats(league_id, OPPONENT_TEAM, date, league)
