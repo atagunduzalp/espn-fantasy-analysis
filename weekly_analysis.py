@@ -29,7 +29,7 @@ def is_within_week(date_dict, param_date):
     start_of_week = param_date - datetime.timedelta(days=day_of_week)
 
     # Haftanın bitiş tarihi (Pazar)
-    end_of_week = start_of_week + datetime.timedelta(days=7, hours=7, minutes=59, seconds=59)
+    end_of_week = start_of_week + datetime.timedelta(days=7, hours=8, minutes=59, seconds=59)
 
     today = datetime.datetime.combine(datetime.date.today(), datetime.datetime.min.time())
 
