@@ -10,6 +10,14 @@ from datetime import date
 
 nine_cat_stats = ['PTS', 'BLK', 'STL', 'AST', 'REB', 'TO', '3PM', 'FGM', 'FGA', 'FTM', 'FTA']
 
+def get_teams_in_league(league_id):
+    league = get_league_info(league_id)
+    team_list = []
+    for team in league.teams:
+        team_list.append(team.team_name)
+    return team_list
+
+
 def is_within_week(date_dict, param_date):
 
     if isinstance(param_date, datetime.date) and not isinstance(param_date, datetime.datetime):
