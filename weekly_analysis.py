@@ -18,31 +18,41 @@ def get_teams_in_league(league_id):
     return team_list
 
 
-def is_within_week(date_dict, param_date):
+def is_within_week(date_dict, param_date, player):
+    # eastern = pytz.timezone('America/New_York')
+    local_tz = pytz.timezone('America/New_York')
 
     if isinstance(param_date, datetime.date) and not isinstance(param_date, datetime.datetime):
         param_date = datetime.datetime.combine(param_date, datetime.datetime.min.time())
+    param_date = local_tz.localize(param_date)
+
 
     day_of_week = param_date.weekday()  # 0 = Pazartesi, 6 = Pazar
 
     # Haftanın başlangıç tarihi (Pazartesi)
     start_of_week = param_date - datetime.timedelta(days=day_of_week)
+    start_of_week = start_of_week + datetime.timedelta(days=0, hours=7, minutes=59, seconds=59)
 
     # Haftanın bitiş tarihi (Pazar)
-    end_of_week = start_of_week + datetime.timedelta(days=7, hours=8, minutes=59, seconds=59)
+    end_of_week = start_of_week + datetime.timedelta(days=7, hours=7, minutes=59, seconds=59)
 
-    today = datetime.datetime.combine(datetime.date.today(), datetime.datetime.min.time())
+    today = datetime.datetime.now(local_tz)
 
     count = 0
     for date_elem in date_dict:
         match_date = date_dict[date_elem]['date']
         if isinstance(match_date, datetime.date) and not isinstance(match_date, datetime.datetime):
             match_date = datetime.datetime.combine(match_date, datetime.datetime.min.time())
+        if match_date.tzinfo is None:
+            match_date = local_tz.localize(match_date)
+        # `match_date`'i Doğu saatine göre ayarla
+        # match_date = eastern.localize(match_date)
 
         if today <= match_date <= end_of_week:
             count += 1
 
     return count
+
 
 def get_league_info(league_id):
     return League(league_id=league_id, year=2025, debug=False)
