@@ -18,7 +18,7 @@ def get_teams_in_league(league_id):
     return team_list
 
 
-def is_within_week(date_dict, param_date, player):
+def is_within_week(date_dict, param_date):
     # eastern = pytz.timezone('America/New_York')
     local_tz = pytz.timezone('America/New_York')
 
