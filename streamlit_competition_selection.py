@@ -138,10 +138,7 @@ def do_the_ops():
         st.write("Your Team:", st.session_state.team_name)
         st.write("Opponent Team:", st.session_state.opponent_team_name)
         st.write("Match Date:", st.session_state.match_date)
-        print(st.session_state.league_id)
         league = weekly_analysis.get_league_info(st.session_state.league_id)
-        print(league)
-        print(st.session_state.get('team_name'))
         weekly_analysis.get_teams_stats(st.session_state.get('team_name'), st.session_state.match_date, league,
                                         st.session_state.league_stats_selection)
         weekly_analysis.get_teams_stats(st.session_state.get('opponent_team_name'), st.session_state.match_date, league,
