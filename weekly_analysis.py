@@ -64,7 +64,7 @@ def get_teams_stats(team_name, date, league, stats_type):
     # league = get_league_info(league_id)
     all_players_stats_dict = {}
 
-    stat_selection = get_selected_stat(stats_type)
+    stat_selection, is_3_percentage = get_selected_stat(stats_type)
     current_stats = current_state(team_name, league)
 
     for team in league.teams:
@@ -99,16 +99,17 @@ def get_teams_stats(team_name, date, league, stats_type):
     df['total'] = df.sum(axis=1)
     df.loc['%FG', "total"] = df['total']['FGM'] / df['total']['FGA']
     df.loc['%FT', "total"] = df['total']['FTM'] / df['total']['FTA']
-    df.loc['%3PM', "total"] = df['total']['3PM'] / df['total']['3PA']
+    if is_3_percentage:
+        df.loc['%3PM', "total"] = df['total']['3PM'] / df['total']['3PA']
 
     st.write(df)
 
 
 def get_selected_stat(league_stat):
     if league_stat== '9-Cat':
-        return nine_cat_stats
+        return nine_cat_stats, False
     elif league_stat== '9-Cat + 3%':
-        return three_point_percentage_league
+        return three_point_percentage_league, True
 
 def percentage_calculation(stats):
     try:
