@@ -10,6 +10,7 @@ from datetime import date
 
 
 nine_cat_stats = ['PTS', 'BLK', 'STL', 'AST', 'REB', 'TO', '3PM', 'FGM', 'FGA', 'FTM', 'FTA']
+three_point_percentage_league = ['PTS', 'BLK', 'STL', 'AST', 'REB', 'TO', '3PM', '3PA','FGM', 'FGA', 'FTM', 'FTA' ]
 
 def get_teams_in_league(league_id):
     league = get_league_info(league_id)
@@ -59,11 +60,12 @@ def get_league_info(league_id):
     return League(league_id=league_id, year=2025, debug=False)
 
 
-def get_teams_stats(team_name, date, league):
+def get_teams_stats(team_name, date, league, stats_type):
     # league = get_league_info(league_id)
     all_players_stats_dict = {}
 
-    current_stats = current_state(team_name, league)
+    stat_selection = get_selected_stat(stats_type)
+    current_stats = current_state(team_name, league, stat_selection)
 
     for team in league.teams:
         if team.team_name == team_name:
@@ -76,7 +78,7 @@ def get_teams_stats(team_name, date, league):
                     match_count = is_within_week(player.schedule, date)
                     if player.stats is not None:
                         last_15_days_avg = {}
-                        for key in nine_cat_stats:
+                        for key in stat_selection:
                             if '2025_last_15' in player.stats:
                                 # '2025_projected' '2024_last_15'
                                 if len(player.stats['2025_last_15']) > 4:
@@ -97,16 +99,28 @@ def get_teams_stats(team_name, date, league):
     df['total'] = df.sum(axis=1)
     df.loc['%FG', "total"] = df['total']['FGM'] / df['total']['FGA']
     df.loc['%FT', "total"] = df['total']['FTM'] / df['total']['FTA']
+    df.loc['%3PM', "total"] = df['total']['3PM'] / df['total']['3PA']
 
     st.write(df)
 
 
+def get_selected_stat(league_stat):
+    if league_stat== '9-Cat':
+        return nine_cat_stats
+    elif league_stat== '9-Cat + 3%':
+        return three_point_percentage_league
+
 def percentage_calculation(stats):
     try:
+        # Floor Division : Gives only Fractional Part as Answer
+
         if stats is not None and 'FGA' in stats.keys():
             stats['%FG'] = stats['FGM'] / stats['FGA']
         if stats is not None and 'FTA' in stats.keys():
             stats['%FT'] = stats['FTM'] / stats['FTA']
+        if stats is not None and '3PA' in stats.keys():
+            stats['%3PM'] = stats['3PM'] / stats['3PA']
+
     except ZeroDivisionError:
         print("Sorry ! You are dividing by zero ")
 

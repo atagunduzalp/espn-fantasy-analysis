@@ -57,6 +57,8 @@ if "team_name" not in st.session_state:
     st.session_state.team_name = ""
 if "opponent_team_name" not in st.session_state:
     st.session_state.opponent_team_name = ""
+if "league_stats_selection" not in st.session_state:
+    st.session_state.league_stats_selection = ""
 if "match_date" not in st.session_state:
     st.session_state.match_date = dt_date.today()
 
@@ -67,12 +69,12 @@ def reset():
     st.session_state.teams_submitted = False
     st.session_state.team_name = ""
     st.session_state.opponent_team_name = ""
+    st.session_state.league_stats_selection = ""
     st.session_state.match_date = date.today()
 
 # 1. League ID bilgisi al ve submit butonu
 
 def get_league_id():
-    print("2. geldi mi")
     league_id = st.text_input("Enter League ID:", value=st.session_state.league_id)
     if st.button("Submit League ID"):
         if league_id:
@@ -114,6 +116,12 @@ def get_team_names(league_id_int):
             key="opponent_team_selector"  # Benzersiz key
         )
 
+        st.session_state.league_stats_selection = st.selectbox(
+            "Select League stats:",
+            ['9-Cat', '9-Cat + 3%'],
+            key="league_stat_selection"
+        )
+
         # team_name = st.selectbox("Select your Team:", team_list, key="team_name")
         # opponent_team_name = st.selectbox("Select Opponent Team:", team_list, key="opponent_team_name")
 
@@ -134,8 +142,10 @@ def do_the_ops():
         league = weekly_analysis.get_league_info(st.session_state.league_id)
         print(league)
         print(st.session_state.get('team_name'))
-        weekly_analysis.get_teams_stats(st.session_state.get('team_name'), st.session_state.match_date, league)
-        weekly_analysis.get_teams_stats(st.session_state.get('opponent_team_name'), st.session_state.match_date, league)
+        weekly_analysis.get_teams_stats(st.session_state.get('team_name'), st.session_state.match_date, league,
+                                        st.session_state.league_stats_selection)
+        weekly_analysis.get_teams_stats(st.session_state.get('opponent_team_name'), st.session_state.match_date, league,
+                                        st.session_state.league_stats_selection)
 
             # result = f"Simulation for {team_name} vs {opponent_team_name} on {match_date} in League {league_id} is complete!"
             # st.success(result)
