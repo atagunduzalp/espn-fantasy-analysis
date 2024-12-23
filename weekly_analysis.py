@@ -65,7 +65,7 @@ def get_teams_stats(team_name, date, league, stats_type):
     all_players_stats_dict = {}
 
     stat_selection = get_selected_stat(stats_type)
-    current_stats = current_state(team_name, league, stat_selection)
+    current_stats = current_state(team_name, league)
 
     for team in league.teams:
         if team.team_name == team_name:
