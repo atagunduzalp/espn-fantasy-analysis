@@ -6,6 +6,7 @@ pd.set_option('display.max_rows', None)
 import datetime
 import streamlit as st
 import pytz
+
 from datetime import date
 
 
@@ -61,14 +62,16 @@ def get_league_info(league_id):
 
 
 def get_teams_stats(team_name, date, league, stats_type):
-    # league = get_league_info(league_id)
+
     all_players_stats_dict = {}
+    category_stats = {}
 
     stat_selection, is_3_percentage = get_selected_stat(stats_type)
-    current_stats = current_state(team_name, league)
+    current_stats = current_state(team_name, league, date, stat_selection)
 
     for team in league.teams:
         if team.team_name == team_name:
+            category_stats = category_analysis(team, team_name)
             roster = team.roster
             stat_dict = {}
             for player in roster:
@@ -90,21 +93,46 @@ def get_teams_stats(team_name, date, league, stats_type):
 
                         percentage_calculation(last_15_days_avg)
 
+                        last_15_days_avg['match_count'] = match_count
                         player_stats_dict['2025_last_15'] = last_15_days_avg
-                        # all_players_stats_dict[player.name] = player_stats_dict
                         all_players_stats_dict[player.name] = last_15_days_avg
-    print(all_players_stats_dict)
+    # print(all_players_stats_dict)
     all_players_stats_dict['current'] = current_stats
     df = pd.DataFrame(all_players_stats_dict)
     df['total'] = df.sum(axis=1)
     df.loc['%FG', "total"] = df['total']['FGM'] / df['total']['FGA']
     df.loc['%FT', "total"] = df['total']['FTM'] / df['total']['FTA']
     if is_3_percentage:
-        df.loc['%3PM', "total"] = df['total']['3PM'] / df['total']['3PA'ır
+        df.loc['%3PM', "total"] = df['total']['3PM'] / df['total']['3PA']
 
 
     st.write(df)
+    st.write("Team's category results" + str(category_stats))
 
+def category_analysis(team, team_name):
+    stat_dict = {}
+    week_count = 0
+    schedule = team.schedule
+    for ones in schedule:
+        if ones.winner == 'UNDECIDED':
+            break
+        else:
+            week_count += 1
+            if ones.away_team.team_name == team_name:
+                team_cats = ones.away_team_cats
+            elif ones.home_team.team_name == team_name:
+                team_cats = ones.home_team_cats
+            else:
+                continue
+            for stat_name in team_cats:
+                stat = team_cats[stat_name]
+                if stat['result'] == 'WIN':
+                    if stat_name in stat_dict.keys():
+                        stat_dict[stat_name] = 1 + stat_dict[stat_name]
+                    else:
+                        stat_dict[stat_name] = 1
+    stat_dict['week_count'] = week_count
+    return stat_dict
 
 def get_selected_stat(league_stat):
     if league_stat== '9-Cat':
@@ -128,38 +156,38 @@ def percentage_calculation(stats):
 
 
 def current_state(team_name, league, date, stat_selection):
-    current_away_stats = {}
-    current_home_stats = {}
+    current_team_stats = {}
 
     if is_date_in_current_week(date):
         box_score = league.box_scores()
         for game in box_score:
             if game.home_team.team_name == team_name:
-                home_stat = game.home_stats
-                if len(home_stat) > 0:
-                    for key in stat_selection:
-                        current_home_stats[key] = home_stat.get(key)['value']
-                    percentage_calculation(current_home_stats)
-                return current_home_stats
+                team_stats = game.home_stats
             elif game.away_team.team_name == team_name:
-                away_stat = game.away_stats
-                if len(away_stat) > 0:
-                    for key in stat_selection:
-                        if key == '3PTM':
-                            key = '3PM'
-                        current_away_stats[key] = away_stat.get(key)['value']
-                    percentage_calculation(current_away_stats)
-                return current_away_stats
-    return current_away_stats
+                team_stats = game.away_stats
+            else:
+                continue
+
+            if len(team_stats) > 0:
+                for key in stat_selection:
+                    if key == '3PTM':
+                        key = '3PM'
+                    current_team_stats[key] = team_stats.get(key)['value']
+                percentage_calculation(current_team_stats)
+            return current_team_stats
+    return current_team_stats
 
 def is_date_in_current_week(date_to_check):
-    from datetime import datetime, timedelta
-    today = datetime.today()
+    import datetime
+    today = datetime.datetime.today()
 
-    start_of_week = today - timedelta(days=today.weekday())  # Pazartesi 00:00
+    if isinstance(date_to_check, datetime.date) and not isinstance(date_to_check, datetime.datetime):
+        date_to_check = datetime.datetime.combine(date_to_check, datetime.datetime.min.time())
+
+    start_of_week = today - datetime.timedelta(days=today.weekday())  # Pazartesi 00:00
     start_of_week = start_of_week.replace(hour=0, minute=0, second=0, microsecond=0)
 
-    end_of_week = start_of_week + timedelta(days=6, hours=23, minutes=59, seconds=59)
+    end_of_week = start_of_week + datetime.timedelta(days=6, hours=23,minutes=59, seconds=59)
 
     return start_of_week <= date_to_check <= end_of_week
 
