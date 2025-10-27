@@ -7,9 +7,6 @@ import datetime
 import streamlit as st
 import pytz
 
-from datetime import date
-
-
 nine_cat_stats = ['PTS', 'BLK', 'STL', 'AST', 'REB', 'TO', '3PM', 'FGM', 'FGA', 'FTM', 'FTA']
 three_point_percentage_league = ['PTS', 'BLK', 'STL', 'AST', 'REB', 'TO', '3PM', '3PA','FGM', 'FGA', 'FTM', 'FTA' ]
 
@@ -58,7 +55,7 @@ def is_within_week(date_dict, param_date):
 
 
 def get_league_info(league_id):
-    return League(league_id=league_id, year=2025, debug=False)
+    return League(league_id=league_id, year=2026, debug=False)
 
 
 def get_teams_stats(team_name, date, league, stats_type):
@@ -82,19 +79,19 @@ def get_teams_stats(team_name, date, league, stats_type):
                     if player.stats is not None:
                         last_15_days_avg = {}
                         for key in stat_selection:
-                            if '2025_last_15' in player.stats:
-                                # '2025_projected' '2024_last_15'
-                                if len(player.stats['2025_last_15']) > 4:
-                                    if key in player.stats['2025_last_15']['avg']:
-                                        stat_dict[key] = player.stats['2025_last_15']['avg'][key] * match_count
-                                        last_15_days_avg[key] = player.stats['2025_last_15']['avg'][key] * match_count
+                            if '2026_last_15' in player.stats:
+                                # '2026_projected' '2024_last_15'
+                                if len(player.stats['2026_last_15']) > 4:
+                                    if key in player.stats['2026_last_15']['avg']:
+                                        stat_dict[key] = player.stats['2026_last_15']['avg'][key] * match_count
+                                        last_15_days_avg[key] = player.stats['2026_last_15']['avg'][key] * match_count
                                     else:
                                         last_15_days_avg[key] = 0
 
                         percentage_calculation(last_15_days_avg)
 
                         last_15_days_avg['match_count'] = match_count
-                        player_stats_dict['2025_last_15'] = last_15_days_avg
+                        player_stats_dict['2026_last_15'] = last_15_days_avg
                         all_players_stats_dict[player.name] = last_15_days_avg
     # print(all_players_stats_dict)
     all_players_stats_dict['current'] = current_stats
@@ -190,16 +187,3 @@ def is_date_in_current_week(date_to_check):
     end_of_week = start_of_week + datetime.timedelta(days=6, hours=23,minutes=59, seconds=59)
 
     return start_of_week <= date_to_check <= end_of_week
-
-
-# if __name__ == '__main__':
-#     date = datetime.datetime(2024, 11, 25)
-#     #24662177
-#     league_id = '170805702'
-#     # league = League(league_id= league_id, year=2025, debug=False)
-#     league = get_league_info(league_id)
-#     MY_TEAM = 'Los Black Mamba'
-#     OPPONENT_TEAM = "Burak's 6'Under"
-#     # MY_TEAM = 'Vinsanity Carter '
-#     team_stats = get_teams_stats(league_id, MY_TEAM, date, league)
-#     away_team_stats = get_teams_stats(league_id, OPPONENT_TEAM, date, league)
