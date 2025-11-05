@@ -1,11 +1,76 @@
 
 import streamlit as st
 import weekly_analysis
+import heatmap_standings
 from datetime import date as dt_date
 from team_radar_streamlit import team_radar_page
 
+# st.markdown("""
+# <style>
+# /* BUTTONS */
+# div.stButton > button {
+#     background-color: #F27A21 !important;
+#     color: white !important;
+#     border-radius: 8px !important;
+#     border: none !important;
+#     font-weight: 600;
+#     padding: 0.6em 1.2em;
+# }
+# div.stButton > button:hover {
+#     background-color: #ff8f3a !important;
+# }
+#
+# /* SELECT DROPDOWNS */
+# .stSelectbox label {
+#     color: #f27a21 !important;
+#     font-weight: 600;
+# }
+#
+# /* HEADERS */
+# h1, h2, h3 {
+#     color: #F27A21 !important;
+#     font-weight: 700 !important;
+# }
+#
+# /* SIDEBAR */
+# .css-1d391kg, .css-12oz5g7 {
+#     background-color: #111 !important;
+# }
+# <div style="text-align:center;padding:10px 0;">
+#     <span style="font-size:32px;font-weight:800;color:#F27A21;">🏀 Fantasy NBA Analytics</span><br>
+#     <span style="font-size:16px;color:#DDD;">Advanced Stats & Matchup Insights</span>
+# </div>
+# </style>
+# """, unsafe_allow_html=True)
+
+st.markdown("""
+<style>
+.main-title {
+    font-size: 28px;
+    font-weight: 800;
+    color: #F27A21;
+    padding-bottom: 0px;
+}
+.sub-header {
+    font-size: 14px;
+    color: #BBBBBB;
+    margin-bottom: 20px;
+}
+.page-title {
+    font-size: 24px;
+    font-weight: 700;
+    margin-top: 10px;
+    margin-bottom: 8px;
+}
+</style>
+""", unsafe_allow_html=True)
+
+st.markdown('<div class="main-title">🏀 Fantasy NBA Tools</div>', unsafe_allow_html=True)
+st.markdown('<div class="sub-header">Advanced Matchup Analytics</div>', unsafe_allow_html=True)
+
+
 # Başlık
-st.title("Fantasy NBA Analysis App")
+# st.title("Fantasy NBA Analysis App")
 
 # Session State ile durum yönetimi
 if "league_id" not in st.session_state:
@@ -31,7 +96,8 @@ def reset():
     st.session_state.team_name = ""
     st.session_state.opponent_team_name = ""
     st.session_state.league_stats_selection = ""
-    st.session_state.match_date = date.today()
+    st.session_state.match_date = dt_date.today()
+    st.session_state.owner_unlocked = False
 
 # 1. League ID bilgisi al ve submit butonu
 
@@ -77,6 +143,30 @@ def get_team_names(league_id_int):
             key="opponent_team_selector"  # Benzersiz key
         )
 
+        owner_teams = st.secrets.get("OWNER_TEAMS", [])
+        if isinstance(owner_teams, str):
+            owner_teams = [owner_teams]
+
+        if "owner_unlocked" not in st.session_state:
+            st.session_state.owner_unlocked = False
+
+        selected_team = st.session_state.team_name
+        opp_team = st.session_state.opponent_team_name
+
+        # Eğer seçilen takım seninse ve henüz unlock edilmemişse
+        if (selected_team in owner_teams or opp_team in owner_teams) and not st.session_state.owner_unlocked:
+            password = st.text_input("🔐 Private team. Enter owner key:", type="password")
+
+            if password:
+                if password == st.secrets["OWNER_PASS"]:
+                    st.session_state.owner_unlocked = True
+                    st.success("✅ Access granted!")
+                else:
+                    st.error("❌ Wrong key — access denied")
+                    st.stop()
+            else:
+                st.stop()
+
         st.session_state.league_stats_selection = st.selectbox(
             "Select League stats:",
             ['9-Cat', '9-Cat + 3%'],
@@ -97,25 +187,26 @@ def do_the_ops():
         st.write("Opponent Team:", st.session_state.opponent_team_name)
         st.write("Match Date:", st.session_state.match_date)
         league = weekly_analysis.get_league_info(st.session_state.league_id)
+
         weekly_analysis.get_teams_stats(st.session_state.get('team_name'), st.session_state.match_date, league,
                                         st.session_state.league_stats_selection)
         weekly_analysis.get_teams_stats(st.session_state.get('opponent_team_name'), st.session_state.match_date, league,
                                         st.session_state.league_stats_selection)
 
-if st.button("Reset"):
-    reset()
-    # st.experimental_rerun()
-
 if __name__ == '__main__':
     # Sidebar Menü
     st.sidebar.title("🏀 ESPN Fantasy Tools")
     page = st.sidebar.radio(
-        "Mod Seç:",
-        ["Weekly Analysis", "Team Radar Chart"]
+        "Select:",
+        ["Weekly Analysis", "Team Radar Chart", "Heatmap Standing Analysis"]
     )
 
     if page == "Team Radar Chart":
         team_radar_page()
     elif page == "Weekly Analysis":
+        st.markdown('<div class="page-title">📊 Weekly Matchup Analysis</div>', unsafe_allow_html=True)
+        if st.sidebar.button("🔄 Reset Weekly Selection"):
+            reset()
         get_league_id()
-#     get_team_names(st.session_state.league_id)
+    elif page == "Heatmap Standing Analysis":
+        heatmap_standings.heatmap_page()

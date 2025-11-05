@@ -53,7 +53,7 @@ def is_within_week(date_dict, param_date):
 
     return count
 
-
+@st.cache_data(show_spinner=False)
 def get_league_info(league_id):
     return League(league_id=league_id, year=2026, debug=False)
 

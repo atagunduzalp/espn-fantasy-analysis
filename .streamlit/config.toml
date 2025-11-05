@@ -1,0 +1,13 @@
+#[theme]
+#primaryColor="#F27A21"            # Basketball orange
+#backgroundColor="#0B0B0B"
+#secondaryBackgroundColor="#1A1A1A"
+#textColor="#FFFFFF"
+#font="sans serif"
+
+[theme]
+primaryColor="#F27A21"            # NBA orange (ball)
+backgroundColor="#0C0C0E"         # ESPN dark graphite
+secondaryBackgroundColor="#1A1A1D"
+textColor="#FFFFFF"
+font="sans serif"

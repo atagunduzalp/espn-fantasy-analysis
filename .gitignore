@@ -11,3 +11,4 @@ __pycache__/
 
 fantasy-8li.py
 streamlit_main.py
+.streamlit/secrets.toml

@@ -6,7 +6,8 @@ import matplotlib.pyplot as plt
 from espn_api.basketball import League
 
 def team_radar_page():
-    st.title("🕸️ Team Matchup Radar")
+    st.markdown('<div class="page-title">🕸️ Team Radar</div>', unsafe_allow_html=True)
+    # st.title("🕸️ Team Matchup Radar")
 
     # --- Girdiler ---
     LEAGUE_ID = st.text_input("League ID", placeholder="ex: 123456789")
@@ -79,7 +80,7 @@ def team_radar_page():
         plt.ylim(-2.5,2.5)
         ax.axhline(0, color='gray', linestyle='--', linewidth=0.8)
 
-        colors = ["royalblue", "orangered"]
+        colors = ["#F27A21", "#808080"]
         for profile, color, label in zip([team1_profile, team2_profile], colors, labels):
             values = profile.tolist() + [profile.tolist()[0]]
             ax.plot(angles, values, linewidth=2, label=label, color=color)
