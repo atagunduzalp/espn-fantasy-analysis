@@ -188,10 +188,12 @@ def do_the_ops():
         st.write("Match Date:", st.session_state.match_date)
         league = weekly_analysis.get_league_info(st.session_state.league_id)
 
-        weekly_analysis.get_teams_stats(st.session_state.get('team_name'), st.session_state.match_date, league,
+        df_1 = weekly_analysis.get_teams_stats(st.session_state.get('team_name'), st.session_state.match_date, league,
                                         st.session_state.league_stats_selection)
-        weekly_analysis.get_teams_stats(st.session_state.get('opponent_team_name'), st.session_state.match_date, league,
+        df_2 = weekly_analysis.get_teams_stats(st.session_state.get('opponent_team_name'), st.session_state.match_date, league,
                                         st.session_state.league_stats_selection)
+
+        weekly_analysis.color_table(df_1,df_2)
 
 if __name__ == '__main__':
     # Sidebar Menü

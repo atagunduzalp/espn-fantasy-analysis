@@ -8,7 +8,8 @@ import streamlit as st
 import pytz
 
 nine_cat_stats = ['PTS', 'BLK', 'STL', 'AST', 'REB', 'TO', '3PM', 'FGM', 'FGA', 'FTM', 'FTA']
-three_point_percentage_league = ['PTS', 'BLK', 'STL', 'AST', 'REB', 'TO', '3PM', '3PA','FGM', 'FGA', 'FTM', 'FTA' ]
+three_point_percentage_league = ['PTS', 'BLK', 'STL', 'AST', 'REB', 'TO', '3PM', '3PA', 'FGM', 'FGA', 'FTM', 'FTA']
+
 
 def get_teams_in_league(league_id):
     league = get_league_info(league_id)
@@ -25,7 +26,6 @@ def is_within_week(date_dict, param_date):
     if isinstance(param_date, datetime.date) and not isinstance(param_date, datetime.datetime):
         param_date = datetime.datetime.combine(param_date, datetime.datetime.min.time())
     param_date = local_tz.localize(param_date)
-
 
     day_of_week = param_date.weekday()  # 0 = Pazartesi, 6 = Pazar
 
@@ -53,13 +53,13 @@ def is_within_week(date_dict, param_date):
 
     return count
 
+
 # @st.cache_data(show_spinner=False)
 def get_league_info(league_id):
     return League(league_id=league_id, year=2026, debug=False)
 
 
 def get_teams_stats(team_name, date, league, stats_type):
-
     all_players_stats_dict = {}
     category_stats = {}
 
@@ -102,9 +102,10 @@ def get_teams_stats(team_name, date, league, stats_type):
     if is_3_percentage:
         df.loc['%3PM', "total"] = df['total']['3PM'] / df['total']['3PA']
 
-
     st.write(df)
     st.write("Team's category results" + str(category_stats))
+    return df
+
 
 def category_analysis(team, team_name):
     stat_dict = {}
@@ -131,11 +132,13 @@ def category_analysis(team, team_name):
     stat_dict['week_count'] = week_count
     return stat_dict
 
+
 def get_selected_stat(league_stat):
-    if league_stat== '9-Cat':
+    if league_stat == '9-Cat':
         return nine_cat_stats, False
-    elif league_stat== '9-Cat + 3%':
+    elif league_stat == '9-Cat + 3%':
         return three_point_percentage_league, True
+
 
 def percentage_calculation(stats):
     try:
@@ -174,6 +177,7 @@ def current_state(team_name, league, date, stat_selection):
             return current_team_stats
     return current_team_stats
 
+
 def is_date_in_current_week(date_to_check):
     import datetime
     today = datetime.datetime.today()
@@ -184,6 +188,85 @@ def is_date_in_current_week(date_to_check):
     start_of_week = today - datetime.timedelta(days=today.weekday())  # Pazartesi 00:00
     start_of_week = start_of_week.replace(hour=0, minute=0, second=0, microsecond=0)
 
-    end_of_week = start_of_week + datetime.timedelta(days=6, hours=23,minutes=59, seconds=59)
+    end_of_week = start_of_week + datetime.timedelta(days=6, hours=23, minutes=59, seconds=59)
 
     return start_of_week <= date_to_check <= end_of_week
+
+
+def color_table(df_1, df_2):
+    cats = ['%FG', '%FT','%3PM', '3PM', 'REB', 'AST', 'STL', 'BLK', 'TO', 'PTS']
+
+    # İki df’de de bulunan kategorileri al
+    valid_cats = sorted(set(df_1.index).intersection(set(df_2.index)).intersection(set(cats)))
+
+    # Yalnızca ortak kategorileri sırayla reindex et
+    df_1 = df_1.reindex(valid_cats)
+    df_2 = df_2.reindex(valid_cats)
+
+    team = st.session_state.get('team_name')
+    opp = st.session_state.get('opponent_team_name')
+
+    # Eğer isimler aynıysa, rakip ismine küçük ek yap
+    if team == opp:
+        opp_display = f"{opp} (opp)"
+    else:
+        opp_display = opp
+
+    comparison = pd.DataFrame({
+        "Category": valid_cats,
+        team: df_1['total'].values,
+        opp_display: df_2['total'].values
+    })
+
+    styled = comparison.style.apply(
+        highlight_rows,
+        axis=1,
+        subset=[team, opp_display],
+        cats=comparison["Category"].tolist()
+    )
+
+    st.dataframe(styled, use_container_width=True)
+
+
+def highlight_rows(row, cats):
+    cat = cats[row.name]
+    higher_is_better = cat not in ["TO"]
+    your_val = row[st.session_state.get('team_name')]
+    opp_val = row[st.session_state.get('opponent_team_name')]
+
+    # renk paleti
+    soft_green = "#17a331"
+    soft_red = "#87161d"
+    soft_orange = "#c4b316"
+    soft_gray = "#8a8888"
+
+    # eşitlik kontrolü
+    if your_val == opp_val:
+        return [f"background-color: {soft_gray}"] * 2
+
+    # metrik bazlı fark hesaplama
+    if cat in ["%FG", "%FT",'%3PM']:
+        diff = abs(your_val - opp_val)  # örn. 0.51 - 0.47 = 0.04
+        threshold = 0.03  # 3 yüzde puanı eşiği
+        is_close = diff < threshold
+    else:
+        if opp_val == 0:
+            diff_ratio = 1
+        else:
+            diff_ratio = abs(your_val - opp_val) / max(your_val, opp_val)
+        threshold = 0.10  # diğer metriklerde %10 fark eşiği
+        is_close = diff_ratio < threshold
+
+    # turuncu: yakın fark
+    if is_close:
+        return [f"background-color: {soft_orange}"] * 2
+
+    # normal yeşil / kırmızı renklendirme
+    if higher_is_better:
+        style_you = f"background-color: {soft_green}" if your_val > opp_val else f"background-color: {soft_red}"
+        style_opp = f"background-color: {soft_green}" if opp_val > your_val else f"background-color: {soft_red}"
+    else:
+        style_you = f"background-color: {soft_green}" if your_val < opp_val else f"background-color: {soft_red}"
+        style_opp = f"background-color: {soft_green}" if opp_val < your_val else f"background-color: {soft_red}"
+
+    return [style_you, style_opp]
