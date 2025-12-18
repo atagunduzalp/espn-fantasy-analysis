@@ -1,14 +1,25 @@
 # Python Sanal Ortam
 .venv/
+venv/
+env/
+*-env/
+genv/
 
 # JetBrains IDEA Klasörü
 .idea/
+
+# VS Code Klasörü
+.vscode/
+
+# Mac OS Dosyaları
+.DS_Store
 
 # Diğer Genel Dosyalar
 *.log
 __pycache__/
 *.pyc
 
+# Özel Dosyalar
 fantasy-8li.py
 streamlit_main.py
 .streamlit/secrets.toml

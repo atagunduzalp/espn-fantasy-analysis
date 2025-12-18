@@ -1,35 +1,37 @@
 # 🏀 ESPN Fantasy Basketball Analysis Tool
 
-A Streamlit application for analyzing ESPN Fantasy Basketball team performance and making weekly match predictions.
+A Streamlit application designed to give you a competitive edge in ESPN Fantasy Basketball. Analyze matchups, visualize league standings, and find the perfect waiver wire pickups.
 
 ## ✨ Features
 
-- **Weekly Matchup Analysis**: By player performances in teams, predictions result for current matchup in 9-cat and 9-cat+%3 formats
-- **League Standing Analysis**: Fetch data from ESPN Fantasy Basketball leagues and heatmap standings
-- **Team Comparison**: Detailed statistical comparison between two teams and shows in radar chart
-- **9-Cat and 9-Cat + 3%** league format support
+- **🔥 Smart Waiver Recommendations**: Automatically suggests free agents who excel in the specific categories where your current matchup is close.
+- **📊 Weekly Matchup Analysis**: Predicts match results based on player schedules and recent performance for 9-cat and 9-cat+3% formats.
+- **🏆 League Standings Heatmap**: Visualize the strengths and weaknesses of every team in your league with an interactive heatmap.
+- **🕸️ Team Radar Comparison**: Detailed statistical comparison between two teams using radar charts.
 
-## 🚀 Installation
+## 🚀 Installation & Usage
 
 ```bash
-# Clone the repository
+# 1. Clone the repository
 git clone https://github.com/atagunduzalp/espn-fantasy-analysis.git
 cd espn-fantasy-analysis
 
-# Install dependencies
+# 2. Install dependencies
 pip install -r requirements.txt
 
-# Run the application
-streamlit run streamlit_main.py
+# 3. Run the application
+streamlit run streamlit_competition_selection.py
 ```
 
-## 📱 Usage
+## 📱 How to Use
 
-1. Select a feature from the left menu when the app opens
-   2. **Weekly Analysis**: Enter League ID, team names, and date
-   3. **Team Radar Chart**: Compare two teams in radar chart
-   4. **Heatmap Standing Analysis**: View teams standing analysis with heatmap in your league
+1. **Select a Tool**: Choose from the sidebar menu:
+   - **Weekly Analysis**: See who wins the week and get **Smart Waiver** tips.
+   - **Heatmap Standings**: See the league meta.
+   - **Team Radar**: Head-to-head stat comparison.
+2. **Enter Details**: Provide your League ID and Year (default 2026).
+3. **Dominate**: Use the insights to set your lineup and make moves.
 
 ---
 
-**Note**: This tool is for entertainment purposes only and is not an official ESPN Fantasy Basketball analysis.
+**Note**: This tool is for entertainment and analytical purposes. Not officially affiliated with ESPN.

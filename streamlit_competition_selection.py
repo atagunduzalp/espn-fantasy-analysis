@@ -178,6 +178,8 @@ def get_team_names(league_id_int):
         st.session_state.match_date = prepare_date()
         if st.button("Submit Match Details"):
             st.session_state.teams_submitted = True
+        
+        if st.session_state.teams_submitted:
             do_the_ops()
 
 def do_the_ops():

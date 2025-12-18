@@ -6,6 +6,8 @@ pd.set_option('display.max_rows', None)
 import datetime
 import streamlit as st
 import pytz
+from waiver_analysis import recommend_players
+from utils import percentage_calculation
 
 nine_cat_stats = ['PTS', 'BLK', 'STL', 'AST', 'REB', 'TO', '3PM', 'FGM', 'FGA', 'FTM', 'FTA']
 three_point_percentage_league = ['PTS', 'BLK', 'STL', 'AST', 'REB', 'TO', '3PM', '3PA', 'FGM', 'FGA', 'FTM', 'FTA']
@@ -13,6 +15,8 @@ three_point_percentage_league = ['PTS', 'BLK', 'STL', 'AST', 'REB', 'TO', '3PM',
 
 def get_teams_in_league(league_id):
     league = get_league_info(league_id)
+    # Store league_id in session state for later use
+    st.session_state['league_id'] = league_id
     team_list = []
     for team in league.teams:
         team_list.append(team.team_name)
@@ -140,19 +144,7 @@ def get_selected_stat(league_stat):
         return three_point_percentage_league, True
 
 
-def percentage_calculation(stats):
-    try:
-        # Floor Division : Gives only Fractional Part as Answer
 
-        if stats is not None and 'FGA' in stats.keys():
-            stats['%FG'] = stats['FGM'] / stats['FGA']
-        if stats is not None and 'FTA' in stats.keys():
-            stats['%FT'] = stats['FTM'] / stats['FTA']
-        if stats is not None and '3PA' in stats.keys():
-            stats['%3PM'] = stats['3PM'] / stats['3PA']
-
-    except ZeroDivisionError:
-        print("Sorry ! You are dividing by zero ")
 
 
 def current_state(team_name, league, date, stat_selection):
@@ -226,6 +218,84 @@ def color_table(df_1, df_2):
     )
 
     st.dataframe(styled, use_container_width=True)
+
+    # ---- SMART WAIVER RECOMMENDATIONS ----
+    close_cats = get_close_categories(comparison, team, opp_display)
+    
+    if close_cats:
+        st.info(f"🔥 **Close Categories Detected:** {', '.join(close_cats)}")
+        
+        # Initialize session state for showing recommendations
+        if 'show_waiver_recs' not in st.session_state:
+            st.session_state.show_waiver_recs = False
+            
+        if st.button("Get Waiver Recommendations for These Categories"):
+            st.session_state.show_waiver_recs = True
+            
+        if st.session_state.show_waiver_recs:
+            with st.spinner("Scouting Free Agents..."):
+                # We need the league object. It's not passed here directly, 
+                # but we can get it from session state or re-fetch if needed.
+                # Assuming 'league' is available or we can pass it.
+                # Looking at the code, 'league' is passed to 'get_teams_stats' but not 'color_table'.
+                # We might need to store league in st.session_state or pass it down.
+
+                if 'league_id' in st.session_state:
+                    league = get_league_info(st.session_state['league_id'])
+                    
+                    # Fetch recommendations (returns full list now)
+                    recs = recommend_players(league, close_cats, limit=10) # limit param is now ignored or used for fetch size
+                    
+                    if not recs.empty:
+                        # Initialize pagination state
+                        if 'waiver_limit' not in st.session_state:
+                            st.session_state.waiver_limit = 20
+                            
+                        # Display sliced dataframe
+                        st.success("Top Recommended Pickups:")
+                        st.dataframe(recs.head(st.session_state.waiver_limit), use_container_width=True)
+                        
+                        # Load More Button
+                        if len(recs) > st.session_state.waiver_limit:
+                            if st.button("Load More Players"):
+                                st.session_state.waiver_limit += 10
+                                st.rerun()
+                    else:
+                        st.warning("No suitable players found in top 50.")
+                else:
+                    st.error("League ID not found in session.")
+    else:
+        st.write("No close categories detected this week.")
+
+def get_close_categories(df, team_col, opp_col):
+    """
+    Identifies categories where the matchup is close.
+    df: The comparison DataFrame used in color_table
+    """
+    close_cats = []
+    
+    for index, row in df.iterrows():
+        cat = row['Category']
+        your_val = row[team_col]
+        opp_val = row[opp_col]
+        
+        # Logic copied from highlight_rows for consistency
+        if cat in ["%FG", "%FT",'%3PM']:
+            diff = abs(your_val - opp_val)
+            threshold = 0.03
+            is_close = diff < threshold
+        else:
+            if opp_val == 0:
+                diff_ratio = 1
+            else:
+                diff_ratio = abs(your_val - opp_val) / max(your_val, opp_val)
+            threshold = 0.12
+            is_close = diff_ratio < threshold
+            
+        if is_close:
+            close_cats.append(cat)
+            
+    return close_cats
 
 
 def highlight_rows(row, cats):
