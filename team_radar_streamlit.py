@@ -4,6 +4,7 @@ import numpy as np
 from math import pi
 import matplotlib.pyplot as plt
 from espn_api.basketball import League
+from config import get_season
 
 def team_radar_page():
     st.markdown('<div class="page-title">🕸️ Team Radar</div>', unsafe_allow_html=True)
@@ -17,7 +18,7 @@ def team_radar_page():
         return
 
     try:
-        league = League(league_id=int(LEAGUE_ID), year=2026, debug=False)
+        league = League(league_id=int(LEAGUE_ID), year=get_season(), debug=False)
         st.success(f"Lig başarıyla yüklendi: {league.settings.name}")
     except Exception as e:
         st.error(f"Lig bilgisi alınamadı: {e}")

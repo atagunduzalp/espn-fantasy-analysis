@@ -143,9 +143,15 @@ def get_team_names(league_id_int):
             key="opponent_team_selector"  # Benzersiz key
         )
 
-        owner_teams = st.secrets.get("OWNER_TEAMS", [])
+        try:
+            owner_teams = st.secrets.get("OWNER_TEAMS", [])
+        except (FileNotFoundError, AttributeError, KeyError):
+            owner_teams = []
+
         if isinstance(owner_teams, str):
             owner_teams = [owner_teams]
+        elif not isinstance(owner_teams, (list, tuple, set)):
+            owner_teams = [owner_teams] if owner_teams else []
 
         if "owner_unlocked" not in st.session_state:
             st.session_state.owner_unlocked = False
@@ -154,18 +160,27 @@ def get_team_names(league_id_int):
         opp_team = st.session_state.opponent_team_name
 
         # Eğer seçilen takım seninse ve henüz unlock edilmemişse
-        if (selected_team in owner_teams or opp_team in owner_teams) and not st.session_state.owner_unlocked:
-            password = st.text_input("🔐 Private team. Enter owner key:", type="password")
+        if owner_teams and (selected_team in owner_teams or opp_team in owner_teams) and not st.session_state.owner_unlocked:
+            try:
+                owner_pass = st.secrets.get("OWNER_PASS")
+            except (FileNotFoundError, AttributeError, KeyError):
+                owner_pass = None
 
-            if password:
-                if password == st.secrets["OWNER_PASS"]:
-                    st.session_state.owner_unlocked = True
-                    st.success("✅ Access granted!")
-                else:
-                    st.error("❌ Wrong key — access denied")
-                    st.stop()
+            if owner_pass is None:
+                st.session_state.owner_unlocked = True
+                st.warning("⚠️ No OWNER_PASS configured; private-team gate skipped.")
             else:
-                st.stop()
+                password = st.text_input("🔐 Private team. Enter owner key:", type="password")
+
+                if password:
+                    if password == owner_pass:
+                        st.session_state.owner_unlocked = True
+                        st.success("✅ Access granted!")
+                    else:
+                        st.error("❌ Wrong key — access denied")
+                        st.stop()
+                else:
+                    st.stop()
 
         st.session_state.league_stats_selection = st.selectbox(
             "Select League stats:",

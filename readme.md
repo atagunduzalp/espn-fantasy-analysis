@@ -29,8 +29,14 @@ streamlit run streamlit_competition_selection.py
    - **Weekly Analysis**: See who wins the week and get **Smart Waiver** tips.
    - **Heatmap Standings**: See the league meta.
    - **Team Radar**: Head-to-head stat comparison.
-2. **Enter Details**: Provide your League ID and Year (default 2026).
+2. **Enter Details**: Provide your League ID. The default season is set in `config.py` and can be overridden with `ESPN_FANTASY_SEASON`.
 3. **Dominate**: Use the insights to set your lineup and make moves.
+
+### Season override
+
+```bash
+ESPN_FANTASY_SEASON=2028 streamlit run streamlit_competition_selection.py
+```
 
 ---
 

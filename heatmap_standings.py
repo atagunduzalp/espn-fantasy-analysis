@@ -3,6 +3,7 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 from espn_api.basketball import League
+from config import get_season
 
 # ---- LEAGUE INFO ----
 # LEAGUE_ID = st.text_input("League ID", placeholder="ex: 123456789")
@@ -31,7 +32,7 @@ def heatmap_page():
         st.info("Lütfen yukarıdaki bilgileri doldurun.")
         return
     try:
-        league = League(league_id=int(LEAGUE_ID), year=2026, debug=False)
+        league = League(league_id=int(LEAGUE_ID), year=get_season(), debug=False)
         st.success(f"Lig başarıyla yüklendi: {league.settings.name}")
     except Exception as e:
         st.error(f"Lig bilgisi alınamadı: {e}")

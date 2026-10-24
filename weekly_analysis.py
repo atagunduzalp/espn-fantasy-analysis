@@ -6,7 +6,8 @@ pd.set_option('display.max_rows', None)
 import datetime
 import streamlit as st
 import pytz
-from waiver_analysis import recommend_players
+from config import get_season
+from waiver_analysis import recommend_players, get_player_snapshot
 from utils import percentage_calculation
 
 nine_cat_stats = ['PTS', 'BLK', 'STL', 'AST', 'REB', 'TO', '3PM', 'FGM', 'FGA', 'FTM', 'FTA']
@@ -60,7 +61,7 @@ def is_within_week(date_dict, param_date):
 
 # @st.cache_data(show_spinner=False)
 def get_league_info(league_id):
-    return League(league_id=league_id, year=2026, debug=False)
+    return League(league_id=league_id, year=get_season(), debug=False)
 
 
 def get_teams_stats(team_name, date, league, stats_type):
@@ -80,22 +81,21 @@ def get_teams_stats(team_name, date, league, stats_type):
                     player_stats_dict = {}
 
                     match_count = is_within_week(player.schedule, date)
-                    if player.stats is not None:
+                    snapshot = get_player_snapshot(player)
+                    if snapshot:
                         last_15_days_avg = {}
                         for key in stat_selection:
-                            if '2026_last_15' in player.stats:
-                                # '2026_projected' '2024_last_15'
-                                if len(player.stats['2026_last_15']) > 4:
-                                    if key in player.stats['2026_last_15']['avg']:
-                                        stat_dict[key] = player.stats['2026_last_15']['avg'][key] * match_count
-                                        last_15_days_avg[key] = player.stats['2026_last_15']['avg'][key] * match_count
-                                    else:
-                                        last_15_days_avg[key] = 0
+                            val = snapshot.get(key, 0)
+                            if isinstance(val, (int, float)):
+                                stat_dict[key] = val * match_count
+                                last_15_days_avg[key] = val * match_count
+                            else:
+                                last_15_days_avg[key] = 0
 
                         percentage_calculation(last_15_days_avg)
 
                         last_15_days_avg['match_count'] = match_count
-                        player_stats_dict['2026_last_15'] = last_15_days_avg
+                        player_stats_dict['latest_snapshot'] = last_15_days_avg
                         all_players_stats_dict[player.name] = last_15_days_avg
     # print(all_players_stats_dict)
     all_players_stats_dict['current'] = current_stats
@@ -243,8 +243,8 @@ def color_table(df_1, df_2):
                 if 'league_id' in st.session_state:
                     league = get_league_info(st.session_state['league_id'])
                     
-                    # Fetch recommendations (returns full list now)
-                    recs = recommend_players(league, close_cats, limit=10) # limit param is now ignored or used for fetch size
+                    # Fetch recommendations (full sorted list; paginated below)
+                    recs = recommend_players(league, close_cats)
                     
                     if not recs.empty:
                         # Initialize pagination state
@@ -261,7 +261,7 @@ def color_table(df_1, df_2):
                                 st.session_state.waiver_limit += 10
                                 st.rerun()
                     else:
-                        st.warning("No suitable players found in top 50.")
+                        st.warning("No free agents with last-15-day stats found.")
                 else:
                     st.error("League ID not found in session.")
     else:
